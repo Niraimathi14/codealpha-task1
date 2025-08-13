@@ -1,0 +1,157 @@
+import java.util.*;
+
+class Student {
+    String name;
+    List<Double> grades;
+
+    Student(String name) {
+        this.name = name;
+        this.grades = new ArrayList<>();
+    }
+
+    void addGrade(double grade) {
+        grades.add(grade);
+    }
+
+    double getAverage() {
+        if (grades.isEmpty()) return 0;
+        double sum = 0;
+        for (double g : grades) sum += g;
+        return sum / grades.size();
+    }
+
+    double getHighest() {
+        return grades.isEmpty() ? 0 : Collections.max(grades);
+    }
+
+    double getLowest() {
+        return grades.isEmpty() ? 0 : Collections.min(grades);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%-15s | Avg: %.2f | High: %.2f | Low: %.2f", name, getAverage(), getHighest(), getLowest());
+    }
+}
+
+public class StudentGradeTracker {
+    static List<Student> students = new ArrayList<>();
+    static Scanner sc = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        while (true) {
+            System.out.println("\n📘 Student Grade Tracker");
+            System.out.println("1. Add Student");
+            System.out.println("2. Add Grade to Student");
+            System.out.println("3. View Summary Report");
+            System.out.println("4. View Overall Statistics");
+            System.out.println("5. Exit");
+            System.out.print("Choose an option: ");
+
+            try {
+                int choice = sc.nextInt();
+                sc.nextLine(); // consume newline
+
+                switch (choice) {
+                    case 1 -> addStudent();
+                    case 2 -> addGrade();
+                    case 3 -> viewSummary();
+                    case 4 -> viewOverallStats();
+                    case 5 -> {
+                        System.out.println("Goodbye!");
+                        return;
+                    }
+                    default -> System.out.println("Invalid choice. Please enter a number between 1 and 5.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                sc.nextLine(); // clear invalid input
+            }
+        }
+    }
+
+    static void addStudent() {
+        System.out.print("Enter student name: ");
+        String name = sc.nextLine().trim();
+        if (name.isEmpty()) {
+            System.out.println("Name cannot be empty.");
+            return;
+        }
+        students.add(new Student(name));
+        System.out.println("Student added.");
+    }
+
+    static void addGrade() {
+        if (students.isEmpty()) {
+            System.out.println("No students available.");
+            return;
+        }
+
+        System.out.print("Enter student name: ");
+        String name = sc.nextLine();
+        Student student = findStudent(name);
+
+        if (student == null) {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        System.out.print("Enter grade (0–100): ");
+        try {
+            double grade = sc.nextDouble();
+            if (grade < 0 || grade > 100) {
+                System.out.println("Grade must be between 0 and 100.");
+                return;
+            }
+            student.addGrade(grade);
+            System.out.println("Grade added.");
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid grade input.");
+            sc.nextLine(); // clear invalid input
+        }
+    }
+
+    static Student findStudent(String name) {
+        for (Student s : students) {
+            if (s.name.equalsIgnoreCase(name)) return s;
+        }
+        return null;
+    }
+
+    static void viewSummary() {
+        if (students.isEmpty()) {
+            System.out.println("No students to display.");
+            return;
+        }
+
+        System.out.println("\n--- Summary Report ---");
+        for (Student s : students) {
+            System.out.println(s);
+        }
+    }
+
+    static void viewOverallStats() {
+        if (students.isEmpty()) {
+            System.out.println("No data available.");
+            return;
+        }
+
+        double totalSum = 0;
+        int totalCount = 0;
+        double highest = Double.MIN_VALUE;
+        double lowest = Double.MAX_VALUE;
+
+        for (Student s : students) {
+            for (double g : s.grades) {
+                totalSum += g;
+                totalCount++;
+                if (g > highest) highest = g;
+                if (g < lowest) lowest = g;
+            }
+        }
+
+        double overallAvg = totalCount == 0 ? 0 : totalSum / totalCount;
+        System.out.printf("\n Overall Statistics:\nAverage Grade: %.2f\nHighest Grade: %.2f\nLowest Grade: %.2f\n",
+                overallAvg, highest, lowest);
+    }
+}
